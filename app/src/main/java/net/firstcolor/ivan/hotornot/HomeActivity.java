@@ -1,41 +1,40 @@
 package net.firstcolor.ivan.hotornot;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.IntentSender;
+import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
-import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.Button;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
-
 import net.firstcolor.ivan.hotornot.adapters.TabsPagerAdapter;
 import net.firstcolor.ivan.hotornot.data.ShortForecastHistory;
 import net.firstcolor.ivan.hotornot.fragments.DetailsFragment;
 import net.firstcolor.ivan.hotornot.models.HourlyForecast;
 import net.firstcolor.ivan.hotornot.models.helper_models.ShortForecast;
-import net.firstcolor.ivan.hotornot.services.WeatherService;
-
-import retrofit2.Call;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
+import net.firstcolor.ivan.hotornot.services.HourlyForecastController;
 
 public class HomeActivity extends AppCompatActivity implements DetailsFragment.OnListFragmentInteractionListener {
+
+    private static final int REQUEST_CHECK_SETTINGS = 0x1;
+    private final long LOCATION_REFRESH_TIME = 10000;
+    private final float LOCATION_REFRESH_DISTANCE = 1000;
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -47,14 +46,15 @@ public class HomeActivity extends AppCompatActivity implements DetailsFragment.O
      */
     private TabsPagerAdapter mSectionsPagerAdapter;
 
+
+    private Button updateButton;
+
     /**
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
 
     private FusedLocationProviderClient mFusedLocationClient;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,10 +75,20 @@ public class HomeActivity extends AppCompatActivity implements DetailsFragment.O
 
         mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(mViewPager));
-
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        getWeatherInfo();
+
+        //TODO: make binding
+        updateButton = findViewById(R.id.update_btn);
+        updateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                updateForecast();
+            }
+        });
+
+        updateForecast();
+
 
 //        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 //        fab.setOnClickListener(new View.OnClickListener() {
@@ -91,35 +101,43 @@ public class HomeActivity extends AppCompatActivity implements DetailsFragment.O
 
     }
 
-
-    private void getWeatherInfo()
+    @SuppressLint("MissingPermission")
+    private void updateForecast()
     {
-        //TODO: check for last 3 hours info in db
-        try {
+        if(hasLocationPermition()) {
             mFusedLocationClient.getLastLocation()
                     .addOnSuccessListener(this, new OnSuccessListener<Location>() {
                         @Override
                         public void onSuccess(Location location) {
-                            fetchHourlyForecast(location.getLatitude(), location.getLongitude());
+                            // Got last known location. In some rare situations this can be null.
+                            if (location != null) {
+                                fetchHourlyForecast(location);
+                            }
                         }
                     });
         }
-        catch (SecurityException ex){
-            Toast.makeText(this, "Requires location permissions", Toast.LENGTH_SHORT).show();
-        }
     }
 
-    private void fetchHourlyForecast(double latitude, double longtitude){
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(WeatherService.BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        WeatherService service = retrofit.create(WeatherService.class);
-        HourlyForecast hourlyForecast = service.getHourlyForecast(latitude, longtitude, WeatherService.APPID);
-        DetailsFragment detailsFragment = (DetailsFragment) mSectionsPagerAdapter.getItem(1);
-        ShortForecastHistory.createByShortForecasts(this, hourlyForecast.getForecasts());
-        detailsFragment.renewItems(hourlyForecast);
+    private boolean hasLocationPermition() {
+        return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+    }
 
+    private void saveHourlyForecast(HourlyForecast forecast){
+        ShortForecastHistory.createByShortForecasts(this, forecast.getForecasts());
+    }
+
+    private void fetchHourlyForecast(Location location){
+        HourlyForecastController controller = new HourlyForecastController();
+        controller.start(location, new HourlyForecastController.OnSuccessCallback() {
+            @Override
+            public void handleHourlyForecast(HourlyForecast forecast) {
+                DetailsFragment detailsFragment = (DetailsFragment) mSectionsPagerAdapter.getItem(1);
+                detailsFragment.renewItems(forecast);
+
+                saveHourlyForecast(forecast);
+            }
+        });
     }
 
     @Override

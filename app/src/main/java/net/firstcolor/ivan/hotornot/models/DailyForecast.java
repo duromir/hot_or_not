@@ -1,12 +1,9 @@
 package net.firstcolor.ivan.hotornot.models;
 
-
-import net.firstcolor.ivan.hotornot.models.helper_models.Forecast;
 import net.firstcolor.ivan.hotornot.models.helper_models.LocationInfo;
-
 import java.util.List;
 
-public class DailyForecast {
+public class DailyForecast implements Forecast {
 
     private LocationInfo city;
     private List<Forecast> list;

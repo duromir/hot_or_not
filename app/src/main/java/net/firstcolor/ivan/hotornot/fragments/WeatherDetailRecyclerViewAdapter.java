@@ -23,6 +23,8 @@ public class WeatherDetailRecyclerViewAdapter extends RecyclerView.Adapter<Weath
     private final List<ShortForecast> mValues;
     private final OnListFragmentInteractionListener mListener;
 
+    //private ListItemB
+
     public WeatherDetailRecyclerViewAdapter(List<ShortForecast> items, OnListFragmentInteractionListener listener) {
         mValues = items;
         mListener = listener;
@@ -30,27 +32,28 @@ public class WeatherDetailRecyclerViewAdapter extends RecyclerView.Adapter<Weath
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.fragment_weatherdetail, parent, false);
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        View view = inflater.inflate(R.layout.fragment_weatherdetail, parent, false);
+        //ListItemB
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        holder.mItem = mValues.get(position);
+        holder.setForecast(mValues.get(position));
 //        holder.mIdView.setText(mValues.get(position).id);
 //        holder.mContentView.setText(mValues.get(position).content);
 
-        holder.mView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (null != mListener) {
-                    // Notify the active callbacks interface (the activity, if the
-                    // fragment is attached to one) that an item has been selected.
-                    mListener.onListFragmentInteraction(holder.mItem);
-                }
-            }
-        });
+//        holder.mView.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (null != mListener) {
+//                    // Notify the active callbacks interface (the activity, if the
+//                    // fragment is attached to one) that an item has been selected.
+//                    mListener.onListFragmentInteraction(holder.mItem);
+//                }
+//            }
+//        });
     }
 
     @Override
@@ -60,15 +63,17 @@ public class WeatherDetailRecyclerViewAdapter extends RecyclerView.Adapter<Weath
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
+        private final TextView txtTemp;
 //        public final TextView mIdView;
 //        public final TextView mContentView;
-        public ShortForecast mItem;
+        public void setForecast(ShortForecast forecast){
+            txtTemp.setText(forecast.getTemperatureFormatted());
+        }
 
         public ViewHolder(View view) {
             super(view);
             mView = view;
-//            mIdView = (TextView) view.findViewById(R.id.item_number);
-//            mContentView = (TextView) view.findViewById(R.id.content);
+            txtTemp = view.findViewById(R.id.txt_weather_temp);
         }
 
         @Override

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
     android:background="@drawable/weather_item_box"
     android:layout_marginBottom="@dimen/margin_medium"
@@ -40,7 +40,6 @@
         android:src="@drawable/ic_wi_cloudy"
         />
     <TextView
-        android:text="9º"
         android:textAlignment="textEnd"
         android:id="@+id/txt_weather_temp"
         android:textSize="@dimen/text_huge"

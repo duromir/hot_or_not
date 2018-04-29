@@ -48,6 +48,11 @@ public class ShortForecast {
         }
     }
 
+    public String getTemperatureFormatted(){
+        //return (int) getTemperature();
+        return String.format("%dº", getTemperature());
+    }
+
     public double getTemperature() {
         return main.temp;
     }

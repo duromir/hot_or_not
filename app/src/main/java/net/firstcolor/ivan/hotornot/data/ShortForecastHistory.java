@@ -5,12 +5,13 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 import android.arch.persistence.room.Room;
 import android.content.Context;
+import android.os.AsyncTask;
 
-import net.firstcolor.ivan.hotornot.models.helper_models.Forecast;
 import net.firstcolor.ivan.hotornot.models.helper_models.ShortForecast;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -100,8 +101,25 @@ public class ShortForecastHistory {
                 )
             );
         }
-        AppDatabase db = Room.databaseBuilder(context,
-                AppDatabase.class, "forecast_history").build();
-        db.shortForecastHistoryDao().insertAll(history);
+        DBTask task = new DBTask(context);
+        task.execute();
+    }
+
+    private static class DBTask extends AsyncTask<ShortForecastHistory, Integer, Integer> {
+        private Context mContext;
+
+        /**
+         * @param context
+         */
+        DBTask(Context context){
+            mContext = context;
+        }
+        @Override
+        protected Integer doInBackground(ShortForecastHistory... history) {
+            AppDatabase db = Room.databaseBuilder(mContext,
+                    AppDatabase.class, "forecast_history").build();
+            db.shortForecastHistoryDao().insertAll(Arrays.asList(history));
+            return history.length;
+        }
     }
 }

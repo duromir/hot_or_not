@@ -6,7 +6,12 @@ import net.firstcolor.ivan.hotornot.models.helper_models.ShortForecast;
 
 import java.util.List;
 
-public class HourlyForecast {
+public class HourlyForecast implements Forecast {
+
+    /**
+     * empty constructor
+     */
+    public HourlyForecast(){}
 
     private LocationInfo city;
     private List<ShortForecast> list;

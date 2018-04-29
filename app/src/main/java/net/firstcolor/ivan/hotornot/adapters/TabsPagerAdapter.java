@@ -9,8 +9,14 @@ import net.firstcolor.ivan.hotornot.fragments.DetailsFragment;
 import net.firstcolor.ivan.hotornot.fragments.OverallFragment;
 
 public class TabsPagerAdapter extends FragmentPagerAdapter {
+
+    private OverallFragment overAllTabFragment;
+    private DetailsFragment detailsTabFragment;
+
     public TabsPagerAdapter(FragmentManager fm) {
         super(fm);
+        overAllTabFragment = new OverallFragment();
+        detailsTabFragment = DetailsFragment.newInstance(1);
     }
 
     @Override
@@ -18,10 +24,10 @@ public class TabsPagerAdapter extends FragmentPagerAdapter {
         // getItem is called to instantiate the fragment for the given page.
         // Return a PlaceholderFragment (defined as a static inner class below).
         if(position == 0){
-            return new OverallFragment();
+            return overAllTabFragment;
         }
         else if(position == 1){
-            return new DetailsFragment();
+            return detailsTabFragment;
         }
         return null;
         //return HomeActivity.PlaceholderFragment.newInstance(position + 1);
